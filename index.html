@@ -55,9 +55,9 @@ box.innerHTML='<div class="field"><label>INSTANCE TYPE</label><input value="'+n.
 box.querySelectorAll("input[data-key]").forEach(inp=>{inp.addEventListener("change",()=>{snapshot();const key=inp.dataset.key;const val=inp.type==="number"?Number(inp.value):inp.value; n[key]=val;render()})});
 $("#delete").onclick=()=>{snapshot();nodes=nodes.filter(x=>x.id!==selected);selected=null;render()};$("#duplicate").onclick=()=>{snapshot();const copy={...n,id:id++,name:n.name+" Copy",x:n.x+18,y:n.y+18};nodes.push(copy);selected=copy.id;render()}
 }
-function startDrag(e){if(e.button!==0)return;e.stopPropagation();const n=nodes.find(x=>x.id===Number(e.currentTarget.dataset.id));selected=n.id;drag={id:n.id,sx:e.clientX,sy:e.clientY,x:n.x,y:n.y};e.currentTarget.setPointerCapture(e.pointerId);renderInspector();renderTree();$("#selection-status").textContent="Selected: "+n.name}
-window.addEventListener("pointermove",e=>{if(!drag)return;const rect=$("#device").getBoundingClientRect();const W=$("#device").clientWidth,H=$("#device").clientHeight;const n=nodes.find(x=>x.id===drag.id);n.x=Math.round(drag.x+(e.clientX-drag.sx)*760/W);n.y=Math.round(drag.y+(e.clientY-drag.sy)*480/H);render()});
-window.addEventListener("pointerup",()=>{if(drag){snapshot();drag=null}});
+function startDrag(e){if(e.button!==0)return;e.stopPropagation();const n=nodes.find(x=>x.id===Number(e.currentTarget.dataset.id));if(!n)return;snapshot();selected=n.id;drag={id:n.id,sx:e.clientX,sy:e.clientY,x:n.x,y:n.y,element:e.currentTarget};renderInspector();renderTree();$("#selection-status").textContent="Selected: "+n.name}
+window.addEventListener("pointermove",e=>{if(!drag)return;const W=$("#device").clientWidth,H=$("#device").clientHeight;const n=nodes.find(x=>x.id===drag.id);if(!n)return;n.x=Math.round(drag.x+(e.clientX-drag.sx)*760/W);n.y=Math.round(drag.y+(e.clientY-drag.sy)*480/H);drag.element.style.left=n.x/760*$("#canvas").clientWidth+"px";drag.element.style.top=n.y/480*$("#canvas").clientHeight+"px"});
+window.addEventListener("pointerup",()=>{if(drag){drag=null;render();refreshButtons()}});
 function refreshButtons(){$("#undo").disabled=!history.length;$("#redo").disabled=!future.length}
 function restore(stack,other){if(!stack.length)return;other.push(JSON.stringify({nodes,selected}));const s=JSON.parse(stack.pop());nodes=s.nodes;selected=s.selected;id=Math.max(1,...nodes.map(n=>n.id+1));render();refreshButtons()}
 $("#undo").onclick=()=>restore(history,future);$("#redo").onclick=()=>restore(future,history);
