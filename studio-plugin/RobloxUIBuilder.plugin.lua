@@ -125,11 +125,17 @@ local function createInstance(data, parent)
 		local image = tostring(data.image or "")
 		if image:match("^%d+$") then image = "rbxassetid://" .. image end
 		if image ~= "" then object.Image = image end
-		if object:IsA("ImageButton") then
-			object.Text = tostring(data.text or "")
-			object.TextColor3 = colorFromHex(data.textColor, Color3.new(1, 1, 1))
-			object.Font = fontFromName(data.font)
-			object.TextSize = math.clamp(tonumber(data.textSize) or 14, 8, 100)
+		if object:IsA("ImageButton") and tostring(data.text or "") ~= "" then
+			local caption = Instance.new("TextLabel")
+			caption.Name = "ButtonCaption"
+			caption.BackgroundTransparency = 1
+			caption.Size = UDim2.fromScale(1, 1)
+			caption.Text = tostring(data.text)
+			caption.TextColor3 = colorFromHex(data.textColor, Color3.new(1, 1, 1))
+			caption.Font = fontFromName(data.font)
+			caption.TextSize = math.clamp(tonumber(data.textSize) or 14, 8, 100)
+			caption.TextWrapped = true
+			caption.Parent = object
 		end
 	end
 
